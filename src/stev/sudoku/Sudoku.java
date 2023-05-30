@@ -49,31 +49,29 @@ public class Sudoku {
         return stringBuilder.toString();
     }
 
-    public BooleanFormula modelize(){
-
+    public BooleanFormula modelize() {
         PropositionalVariable variables[][][] = new PropositionalVariable[9][9][9];
 
         //initialisation des variables
-        for(int i = 0; i < 9; i++){
-            for(int j = 0; j < 9; j++){
-                for(int k = 0; k < 9; k++){
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                for (int k = 0; k < 9; k++) {
                     variables[i][j][k] = new PropositionalVariable(i + "" + j + "" + k);
                 }
             }
         }
 
-        //modélisation propriété 1
+        // Modélisation de la première propriété
         BooleanFormula bfAnd12[] = new BooleanFormula[81];
-        for(int i = 0; i < 9; i++){
-            for(int j = 0; j < 9; j++){
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
                 BooleanFormula bfOr1[] = new BooleanFormula[9];
-                for(int k = 0; k < 9; k++){
+                for (int k = 0; k < 9; k++) {
                     BooleanFormula bfAnd11[] = new BooleanFormula[9];
-                    for(int l = 0; l < 9; l++){
-                        if(l != k){
+                    for (int l = 0; l < 9; l++) {
+                        if (l != k) {
                             bfAnd11[l] = new Not(variables[i][j][l]);
-                        }
-                        else{
+                        } else {
                             bfAnd11[l] = variables[i][j][l];
                         }
                     }
@@ -84,15 +82,84 @@ public class Sudoku {
                 bfAnd12[i * 9 + j] = or;
             }
         }
-        BooleanFormula bigFormula = new And(bfAnd12);
+        BooleanFormula prop1 = new And(bfAnd12);
 
-        // We can print it
+        // Modélisation de la deuxième propriété
+        BooleanFormula bfAnd22[] = new BooleanFormula[81];
+        for (int i = 0; i < 9; i++) {
+            for (int k = 0; k < 9; k++) {
+                BooleanFormula bfOr2[] = new BooleanFormula[9];
+                for (int j = 0; j < 9; j++) {
+                    BooleanFormula bfAnd21[] = new BooleanFormula[9];
+                    for (int l = 0; l < 9; l++) {
+                        if (l != j) {
+                            bfAnd21[l] = new Not(variables[i][l][k]);
+                        } else {
+                            bfAnd21[l] = variables[i][l][k];
+                        }
+                    }
+                    And and = new And(bfAnd21);
+                    bfOr2[j] = and;
+                }
+                Or or = new Or(bfOr2);
+                bfAnd22[i * 9 + k] = or;
+            }
+        }
+        BooleanFormula prop2 = new And(bfAnd22);
+
+        // Modélisation de la troisième propriété
+        BooleanFormula bfAnd32[] = new BooleanFormula[81];
+        for (int j = 0; j < 9; j++) {
+            for (int k = 0; k < 9; k++) {
+                BooleanFormula bfOr3[] = new BooleanFormula[9];
+                for (int i = 0; i < 9; i++) {
+                    BooleanFormula bfAnd31[] = new BooleanFormula[9];
+                    for (int l = 0; l < 9; l++) {
+                        if (l != i) {
+                            bfAnd31[l] = new Not(variables[l][j][k]);
+                        } else {
+                            bfAnd31[l] = variables[l][j][k];
+                        }
+                    }
+                    And and = new And(bfAnd31);
+                    bfOr3[i] = and;
+                }
+                Or or = new Or(bfOr3);
+                bfAnd32[j * 9 + k] = or;
+            }
+        }
+        BooleanFormula prop3 = new And(bfAnd32);
+
+        // Modélisation de la quatrième propriété
+        BooleanFormula bfAnd42[] = new BooleanFormula[81];
+        for (int bi = 0; bi < 3; bi++) {
+            for (int bj = 0; bj < 3; bj++) {
+                for (int k = 0; k < 9; k++) {
+                    BooleanFormula bfOr4[] = new BooleanFormula[9];
+                    int count = 0;
+                    for (int i = bi * 3; i < (bi + 1) * 3; i++) {
+                        for (int j = bj * 3; j < (bj + 1) * 3; j++) {
+                            bfOr4[count] = variables[i][j][k];
+                            count++;
+                        }
+                    }
+                    Or or = new Or(bfOr4);
+                    bfAnd42[bi * 27 + bj * 9 + k] = or;
+                }
+            }
+        }
+        BooleanFormula prop4 = new And(bfAnd42);
+
+        // Combinaison de toutes les propriétés
+        BooleanFormula bigFormula = new And(prop1, prop2, prop3, prop4);
+
+        // Affichage de la formule
         System.out.println(bigFormula);
 
-        // Convert this formula to CNF
+        // Conversion de la formule en CNF
         BooleanFormula cnf = BooleanFormula.toCnf(bigFormula);
 
-        // Let's print it again
+        // Affichage de la formule CNF
         System.out.println(cnf);
 
         return cnf;
