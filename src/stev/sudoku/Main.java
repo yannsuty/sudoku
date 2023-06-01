@@ -19,7 +19,7 @@ public class Main {
     };
 
     public static void main(String[] args) throws TimeoutException, ContradictionException {
-        Sudoku sudoku = new Sudoku(3);
+        Sudoku sudoku = new Sudoku(9);
         sudoku.initialize(args[0]);
         System.out.println(sudoku);
 
