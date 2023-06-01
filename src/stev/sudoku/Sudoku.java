@@ -14,17 +14,23 @@ import java.io.PrintWriter;
 
 public class Sudoku {
     private char grille[][];
+    private int taille;
 
-    public Sudoku() {
-        grille = new char[9][9];
+    public Sudoku(){
+        this(9);
     }
 
-    public Sudoku(char[][] g){ grille = g; }
+    public Sudoku(int t) {
+        grille = new char[t][t];
+        taille = t;
+    }
+
+    public Sudoku(char[][] g, int t){ grille = g; taille = t; }
 
     public void initialize(String sudoku) {
-        for (int i=0;i<9;i++)
-            for (int j=0;j<9;j++)
-                this.grille[i][j]=sudoku.charAt(i*9+j);
+        for (int i=0;i<taille;i++)
+            for (int j=0;j<taille;j++)
+                this.grille[i][j]=sudoku.charAt(i*taille+j);
     }
 
     @Override
@@ -32,17 +38,17 @@ public class Sudoku {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Sudoku :\n");
 
-        for (int i=0;i<9;i++) {
-            for (int j = 0; j < 3; j++)
+        for (int i=0;i<taille;i++) {
+            for (int j = 0; j < taille / 3; j++)
                 stringBuilder.append(grille[i][j]+" ");
             stringBuilder.append("|");
-            for (int j = 3; j < 6; j++)
+            for (int j = taille / 3; j < 2 * taille / 3; j++)
                 stringBuilder.append(grille[i][j]+" ");
             stringBuilder.append("|");
-            for (int j = 6; j < 9; j++)
+            for (int j = 2 * taille / 3; j < taille; j++)
                 stringBuilder.append(grille[i][j]+" ");
             stringBuilder.append('\n');
-            if (i==2||i==5)
+            if (i==taille/3 - 1||i==2 * taille / 3 -1)
                 stringBuilder.append("-------------------\n");
         }
 
@@ -50,25 +56,25 @@ public class Sudoku {
     }
 
     public BooleanFormula modelize() {
-        PropositionalVariable variables[][][] = new PropositionalVariable[9][9][9];
+        PropositionalVariable variables[][][] = new PropositionalVariable[taille][taille][taille];
 
         //initialisation des variables
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                for (int k = 0; k < 9; k++) {
+        for (int i = 0; i < taille; i++) {
+            for (int j = 0; j < taille; j++) {
+                for (int k = 0; k < taille; k++) {
                     variables[i][j][k] = new PropositionalVariable(i + "" + j + "" + k);
                 }
             }
         }
 
         // Modélisation de la première propriété
-        BooleanFormula bfAnd12[] = new BooleanFormula[81];
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                BooleanFormula bfOr1[] = new BooleanFormula[9];
-                for (int k = 0; k < 9; k++) {
-                    BooleanFormula bfAnd11[] = new BooleanFormula[9];
-                    for (int l = 0; l < 9; l++) {
+        BooleanFormula bfAnd12[] = new BooleanFormula[taille * taille];
+        for (int i = 0; i < taille; i++) {
+            for (int j = 0; j < taille; j++) {
+                BooleanFormula bfOr1[] = new BooleanFormula[taille];
+                for (int k = 0; k < taille; k++) {
+                    BooleanFormula bfAnd11[] = new BooleanFormula[taille];
+                    for (int l = 0; l < taille; l++) {
                         if (l != k) {
                             bfAnd11[l] = new Not(variables[i][j][l]);
                         } else {
@@ -79,19 +85,20 @@ public class Sudoku {
                     bfOr1[k] = and;
                 }
                 Or or = new Or(bfOr1);
-                bfAnd12[i * 9 + j] = or;
+                bfAnd12[i * taille + j] = or;
             }
         }
         BooleanFormula prop1 = new And(bfAnd12);
+        //System.out.println(prop1);
 
         // Modélisation de la deuxième propriété
-        BooleanFormula bfAnd22[] = new BooleanFormula[81];
-        for (int i = 0; i < 9; i++) {
-            for (int k = 0; k < 9; k++) {
-                BooleanFormula bfOr2[] = new BooleanFormula[9];
-                for (int j = 0; j < 9; j++) {
-                    BooleanFormula bfAnd21[] = new BooleanFormula[9];
-                    for (int l = 0; l < 9; l++) {
+        BooleanFormula bfAnd22[] = new BooleanFormula[taille * taille];
+        for (int i = 0; i < taille; i++) {
+            for (int k = 0; k < taille; k++) {
+                BooleanFormula bfOr2[] = new BooleanFormula[taille];
+                for (int j = 0; j < taille; j++) {
+                    BooleanFormula bfAnd21[] = new BooleanFormula[taille];
+                    for (int l = 0; l < taille; l++) {
                         if (l != j) {
                             bfAnd21[l] = new Not(variables[i][l][k]);
                         } else {
@@ -102,19 +109,21 @@ public class Sudoku {
                     bfOr2[j] = and;
                 }
                 Or or = new Or(bfOr2);
-                bfAnd22[i * 9 + k] = or;
+                bfAnd22[i * taille + k] = or;
             }
         }
         BooleanFormula prop2 = new And(bfAnd22);
 
+        //System.out.println(prop2);
+
         // Modélisation de la troisième propriété
-        BooleanFormula bfAnd32[] = new BooleanFormula[81];
-        for (int j = 0; j < 9; j++) {
-            for (int k = 0; k < 9; k++) {
-                BooleanFormula bfOr3[] = new BooleanFormula[9];
-                for (int i = 0; i < 9; i++) {
-                    BooleanFormula bfAnd31[] = new BooleanFormula[9];
-                    for (int l = 0; l < 9; l++) {
+        BooleanFormula bfAnd32[] = new BooleanFormula[taille * taille];
+        for (int j = 0; j < taille; j++) {
+            for (int k = 0; k < taille; k++) {
+                BooleanFormula bfOr3[] = new BooleanFormula[taille];
+                for (int i = 0; i < taille; i++) {
+                    BooleanFormula bfAnd31[] = new BooleanFormula[taille];
+                    for (int l = 0; l < taille; l++) {
                         if (l != i) {
                             bfAnd31[l] = new Not(variables[l][j][k]);
                         } else {
@@ -125,33 +134,38 @@ public class Sudoku {
                     bfOr3[i] = and;
                 }
                 Or or = new Or(bfOr3);
-                bfAnd32[j * 9 + k] = or;
+                bfAnd32[j * taille + k] = or;
             }
         }
         BooleanFormula prop3 = new And(bfAnd32);
+        //System.out.println(prop3);
 
-        // Modélisation de la quatrième propriété
-        BooleanFormula bfAnd42[] = new BooleanFormula[81];
-        for (int bi = 0; bi < 3; bi++) {
-            for (int bj = 0; bj < 3; bj++) {
-                for (int k = 0; k < 9; k++) {
-                    BooleanFormula bfOr4[] = new BooleanFormula[9];
+        /*// Modélisation de la quatrième propriété
+        BooleanFormula bfAnd42[] = new BooleanFormula[taille * taille];
+        for (int bi = 0; bi < taille / 3; bi++) {
+            for (int bj = 0; bj < taille / 3; bj++) {
+                for (int k = 0; k < taille; k++) {
+                    BooleanFormula bfOr4[] = new BooleanFormula[taille];
                     int count = 0;
-                    for (int i = bi * 3; i < (bi + 1) * 3; i++) {
-                        for (int j = bj * 3; j < (bj + 1) * 3; j++) {
+                    for (int i = bi * taille / 3; i < (bi + 1) * taille / 3; i++) {
+                        for (int j = bj * taille / 3; j < (bj + 1) * (taille / 3); j++) {
                             bfOr4[count] = variables[i][j][k];
                             count++;
                         }
                     }
-                    Or or = new Or(bfOr4);
-                    bfAnd42[bi * 27 + bj * 9 + k] = or;
+                    BooleanFormula or = new Or(bfOr4);
+                    for(int i = 0; i < bfOr4.length; i++){
+                        System.out.println(bfOr4[i]);
+                    }
+                    bfAnd42[bi * taille * 3 + bj * taille + k] = or;
                 }
             }
         }
         BooleanFormula prop4 = new And(bfAnd42);
+        System.out.println(prop4);*/
 
         // Combinaison de toutes les propriétés
-        BooleanFormula bigFormula = new And(prop1, prop2, prop3, prop4);
+        BooleanFormula bigFormula = new And(prop1, prop2, prop3);//, prop4);
 
         // Affichage de la formule
         System.out.println(bigFormula);
@@ -160,17 +174,15 @@ public class Sudoku {
         BooleanFormula cnf = BooleanFormula.toCnf(bigFormula);
 
         // Affichage de la formule CNF
-        System.out.println(cnf);
+        //System.out.println(cnf);
 
         return cnf;
     }
 
     public String solve(int[][] clauses){
-        final int MAXVAR = 9 * 9 * 9;
+        final int MAXVAR = taille * taille * taille;
 
         ISolver solver = SolverFactory.newDefault();
-        Reader reader = new DimacsReader(solver);
-        PrintWriter out = new PrintWriter(System.out,true);
 
         // prepare the solver to accept MAXVAR variables. MANDATORY for MAXSAT solving
         solver.newVar(MAXVAR);
@@ -186,22 +198,22 @@ public class Sudoku {
         }
 
         // we are done. Working now on the IProblem interface
-        char grilleSol[][] = new char[9][9];
+        char grilleSol[][] = new char[taille][taille];
         IProblem problem = solver;
         try {
             if (problem.isSatisfiable()) {
                 int[] model = problem.model();
-                for(int i = 0; i < 9; i ++){
-                    for(int j = 0; j < 9; j++){
-                        for(int k = 0; k < 9; k++){
-                            System.out.println(model[i * 9 + j * 9 + k]);
-                            if(model[i * 9 + j * 9 + k] > 0)
+                for(int i = 0; i < taille; i ++){
+                    for(int j = 0; j < taille; j++){
+                        for(int k = 0; k < taille; k++){
+                            //System.out.println(model[i * taille * 3 + j * taille + k]);
+                            if(model[i * taille * 3 + j * taille + k] > 0)
                                 grilleSol[i][j] = (char) (k + 1 + '0');
                         }
                     }
                 }
 
-                Sudoku sol = new Sudoku(grilleSol);
+                Sudoku sol = new Sudoku(grilleSol, taille);
                 return sol.toString();
             } else {
                 return "Unsatisfiable";

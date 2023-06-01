@@ -14,11 +14,12 @@ import java.io.PrintWriter;
 
 public class Main {
     private static String sudokus[] = {
-            "3##8#1##22#1#3#6#4###2#4###8#9###1#6#6#####5#7#2###4#9###5#9###9#4#8#7#56##1#7##3"
+            "3##8#1##22#1#3#6#4###2#4###8#9###1#6#6#####5#7#2###4#9###5#9###9#4#8#7#56##1#7##3",
+            "3##2##1###"
     };
 
     public static void main(String[] args) throws TimeoutException, ContradictionException {
-        Sudoku sudoku = new Sudoku();
+        Sudoku sudoku = new Sudoku(3);
         sudoku.initialize(args[0]);
         System.out.println(sudoku);
 
