@@ -68,6 +68,7 @@ public class Sudoku {
         PropositionalVariable variables[][][] = new PropositionalVariable[taille][taille][taille];
 
         //initialisation des variables
+        //une variable pour chaque nombre possible dans chaque case, donc 9 par case, soit 9 * 9 * 9 pour une grille de taille 9
         for (int i = 0; i < taille; i++) {
             for (int j = 0; j < taille; j++) {
                 for (int k = 0; k < taille; k++) {
@@ -77,97 +78,82 @@ public class Sudoku {
         }
 
         // Modélisation de la première propriété
-        BooleanFormula[] bfAnd1 = new BooleanFormula[taille * taille * factorielle(taille) / (2 * factorielle(taille - 2))];
-        BooleanFormula[] bfOr1 = new BooleanFormula[taille * taille];
-        int m = 0;
+        ArrayList<BooleanFormula> auPlus1ChiffreParCase = new ArrayList<>();
+        ArrayList<BooleanFormula> auMoins1ChiffreParCase = new ArrayList<>();
         for (int i = 0; i < taille; i++) {
             for (int j = 0; j < taille; j++) {
-                BooleanFormula[] bf = new BooleanFormula[taille];
+                ArrayList<BooleanFormula> tousLesChiffresPossiblesParCase = new ArrayList<>();
                 for (int k = 0; k < taille; k++) {
-                    bf[k] = variables[i][j][k];
+                    tousLesChiffresPossiblesParCase.add(variables[i][j][k]);
                     for (int l = k + 1; l < taille; l++) {
-                        bfAnd1[m] = new Or(new Not(variables[i][j][k]), new Not(variables[i][j][l]));
-                        m++;
+                        auPlus1ChiffreParCase.add(new Or(new Not(variables[i][j][k]), new Not(variables[i][j][l])));
                     }
                 }
-                bfOr1[i * taille + j] = new Or(bf);
+                auMoins1ChiffreParCase.add(new Or(tousLesChiffresPossiblesParCase));
             }
         }
 
-        BooleanFormula prop1 = new And(bfAnd1);
-        BooleanFormula auMoins1 = new And(bfOr1);
-        prop1 = new And(prop1, auMoins1);
+        BooleanFormula prop1 = new And(new And(auPlus1ChiffreParCase), new And(auMoins1ChiffreParCase));
         //System.out.println(prop1);
 
-
-
         // Modélisation de la deuxième propriété
-        BooleanFormula[] bfAnd2 = new BooleanFormula[taille * taille * factorielle(taille) / (2 * factorielle(taille - 2))];
-        int m2 = 0;
+        ArrayList<BooleanFormula> pas2FoisLeMemeChiffreSurUneMemeLigne = new ArrayList<>();
         for (int i = 0; i < taille; i++) {
             for (int k = 0; k < taille; k++) {
                 for (int j = 0; j < taille; j++) {
                     for (int l = j + 1; l < taille; l++) {
-                        bfAnd2[m2] = new Or(new Not(variables[i][j][k]), new Not(variables[i][l][k]));
-                        m2++;
+                        pas2FoisLeMemeChiffreSurUneMemeLigne.add(new Or(new Not(variables[i][j][k]), new Not(variables[i][l][k])));
                     }
                 }
             }
         }
-        BooleanFormula prop2 = new And(bfAnd2);
-
+        BooleanFormula prop2 = new And(pas2FoisLeMemeChiffreSurUneMemeLigne);
         //System.out.println(prop2);
 
 
         // Modélisation de la troisième propriété
-        BooleanFormula[] bfAnd3 = new BooleanFormula[taille * taille * factorielle(taille) / (2 * factorielle(taille - 2))];
-        int m3 = 0;
+        ArrayList<BooleanFormula> pas2FoisLeMemeChiffreSurUneMemeColonne = new ArrayList<>();
         for (int j = 0; j < taille; j++) {
             for (int k = 0; k < taille; k++) {
                 for (int i = 0; i < taille; i++) {
                     for (int l = i + 1; l < taille; l++) {
-                        bfAnd3[m3] = new Or(new Not(variables[i][j][k]), new Not(variables[l][j][k]));
-                        m3++;
+                        pas2FoisLeMemeChiffreSurUneMemeColonne.add(new Or(new Not(variables[i][j][k]), new Not(variables[l][j][k])));
                     }
                 }
             }
         }
-        BooleanFormula prop3 = new And(bfAnd3);
+        BooleanFormula prop3 = new And(pas2FoisLeMemeChiffreSurUneMemeColonne);
         //System.out.println(prop3);
 
         // Modélisation de la quatrième propriété
-        BooleanFormula bfAnd42[] = new BooleanFormula[taille * taille];
+        ArrayList<BooleanFormula> auMoinsUneFoisChaqueChiffreDansChaqueSousGrille = new ArrayList<>();
         for (int bi = 0; bi < taille / 3; bi++) {
             for (int bj = 0; bj < taille / 3; bj++) {
                 for (int k = 0; k < taille; k++) {
-                    BooleanFormula bfOr4[] = new BooleanFormula[taille];
-                    int count = 0;
+                    ArrayList<BooleanFormula> toutesLesCasesDeLaSousGrille = new ArrayList<>();
                     for (int i = bi * taille / 3; i < (bi + 1) * taille / 3; i++) {
                         for (int j = bj * taille / 3; j < (bj + 1) * (taille / 3); j++) {
-                            bfOr4[count] = variables[i][j][k];
-                            count++;
+                            toutesLesCasesDeLaSousGrille.add(variables[i][j][k]);
                         }
                     }
-                    BooleanFormula or = new Or(bfOr4);
-                    bfAnd42[bi * taille * 3 + bj * taille + k] = or;
+                    auMoinsUneFoisChaqueChiffreDansChaqueSousGrille.add(new Or(toutesLesCasesDeLaSousGrille));
                 }
             }
         }
-        BooleanFormula prop4 = new And(bfAnd42);
+        BooleanFormula prop4 = new And(auMoinsUneFoisChaqueChiffreDansChaqueSousGrille);
         //System.out.println(prop4);
 
         //Lecture de l'entrée pour respect de la grille de départ
-        ArrayList<BooleanFormula> bfAnd5 = new ArrayList<>();
+        ArrayList<BooleanFormula> casesPréRemplies = new ArrayList<>();
         for(int i = 0; i < taille; i++){
             for(int j = 0; j < taille; j++){
                 if(grille[i][j] != '#'){
                     int valeur = Character.getNumericValue(grille[i][j]);
-                    bfAnd5.add(variables[i][j][valeur-1]);
+                    casesPréRemplies.add(variables[i][j][valeur-1]);
                 }
             }
         }
-
-        BooleanFormula prop5 = new And(bfAnd5);
+        BooleanFormula prop5 = new And(casesPréRemplies);
 
         // Combinaison de toutes les propriétés
         BooleanFormula bigFormula = new And(prop1, prop2, prop3, prop4, prop5);
@@ -192,13 +178,11 @@ public class Sudoku {
         // prepare the solver to accept MAXVAR variables. MANDATORY for MAXSAT solving
         solver.newVar(MAXVAR);
 
-        // Feed the solver using Dimacs format, using arrays of int
-        // (best option to avoid dependencies on SAT4J IVecInt)
         for (int i=0;i<clauses.length;i++) {
             try {
                 solver.addClause(new VecInt(clauses[i])); // adapt Array to IVecInt
             } catch (ContradictionException e) {
-                return "Unsatisfiable";
+                return "Grille non satisfiable";
             }
         }
 
@@ -221,11 +205,11 @@ public class Sudoku {
                 Sudoku sol = new Sudoku(grilleSol, taille);
                 return sol.toString();
             } else {
-                return "Unsatisfiable";
+                return "Grille non satisfiable";
             }
         } catch (TimeoutException e) {
             e.printStackTrace();
         }
-        return "Unsatisfiable";
+        return "Grille non satisfiable";
     }
 }
