@@ -78,6 +78,8 @@ public class Sudoku {
         }
 
         // Modélisation de la première propriété
+        //On crée les couples de non-variables pour tester qu'il peut y avoir au plus un chiffre
+        //On crée la liste de variables pour tester qu'il y a au moins un chiffre par case
         ArrayList<BooleanFormula> auPlus1ChiffreParCase = new ArrayList<>();
         ArrayList<BooleanFormula> auMoins1ChiffreParCase = new ArrayList<>();
         for (int i = 0; i < taille; i++) {
@@ -94,9 +96,12 @@ public class Sudoku {
         }
 
         BooleanFormula prop1 = new And(new And(auPlus1ChiffreParCase), new And(auMoins1ChiffreParCase));
-        //System.out.println(prop1);
 
         // Modélisation de la deuxième propriété
+        // On crée la liste de couple possible pour chaque ligne
+        // l etant la 2eme position à tester, on test seulement les j+1 car ceux avant on déjà été testé
+        // Exemple pour case de 3, il a 5 couple possible pour tester toutes les possibilités
+        // (¬000&¬010)|(¬000&¬020)|(¬000&¬030)|(¬010&¬020)|(¬020&¬030)
         ArrayList<BooleanFormula> pas2FoisLeMemeChiffreSurUneMemeLigne = new ArrayList<>();
         for (int i = 0; i < taille; i++) {
             for (int k = 0; k < taille; k++) {
@@ -108,10 +113,10 @@ public class Sudoku {
             }
         }
         BooleanFormula prop2 = new And(pas2FoisLeMemeChiffreSurUneMemeLigne);
-        //System.out.println(prop2);
 
 
         // Modélisation de la troisième propriété
+        // Pareil que pour les ligne, on fait chaque couple possible pour chaque colonne
         ArrayList<BooleanFormula> pas2FoisLeMemeChiffreSurUneMemeColonne = new ArrayList<>();
         for (int j = 0; j < taille; j++) {
             for (int k = 0; k < taille; k++) {
@@ -123,9 +128,10 @@ public class Sudoku {
             }
         }
         BooleanFormula prop3 = new And(pas2FoisLeMemeChiffreSurUneMemeColonne);
-        //System.out.println(prop3);
 
         // Modélisation de la quatrième propriété
+        // On test dans chaque sous grille de taille 3 avec les grilles de 0-2 3-6 et 7-9 (pour (bi ou bj)*taille/3)
+        // (001|011|021|101|111|121|201|211|221)&(002|012|022|102|112|122|202|212|222)&(pareil pour chaque chiffre et chaque sous grille)
         ArrayList<BooleanFormula> auMoinsUneFoisChaqueChiffreDansChaqueSousGrille = new ArrayList<>();
         for (int bi = 0; bi < taille / 3; bi++) {
             for (int bj = 0; bj < taille / 3; bj++) {
@@ -141,7 +147,6 @@ public class Sudoku {
             }
         }
         BooleanFormula prop4 = new And(auMoinsUneFoisChaqueChiffreDansChaqueSousGrille);
-        //System.out.println(prop4);
 
         //Lecture de l'entrée pour respect de la grille de départ
         ArrayList<BooleanFormula> casesPréRemplies = new ArrayList<>();

@@ -1,8 +1,5 @@
 package stev.sudoku;
 
-import org.sat4j.specs.ContradictionException;
-import org.sat4j.specs.TimeoutException;
-
 /**
  * Travail de :
  * Diallo Mamadou Sounoussy - DIAM13049900
@@ -12,7 +9,10 @@ import org.sat4j.specs.TimeoutException;
 
 public class Main {
     private static String sudokus[] = {
-            "3##8#1##22#1#3#6#4###2#4###8#9###1#6#6#####5#7#2###4#9###5#9###9#4#8#7#56##1#7##3"
+            "3##8#1##22#1#3#6#4###2#4###8#9###1#6#6#####5#7#2###4#9###5#9###9#4#8#7#56##1#7##3",
+            "1#######6##6#2#7##78945#1#3###8#7##4####3#####9###42#131297##4##4##12#789#8######",
+            "#####28#########1##75##3#4###9#6######4#######3######7#######2######8#399#17#####",
+            "#################################################################################"
     };
 
     public static void main(String[] args){
